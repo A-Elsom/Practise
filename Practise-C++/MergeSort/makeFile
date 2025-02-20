@@ -1,0 +1,2 @@
+executable: SortingMethods.cpp
+	g++ SortingMethods.cpp -o output
