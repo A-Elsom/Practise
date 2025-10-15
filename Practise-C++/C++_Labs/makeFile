@@ -1,0 +1,2 @@
+executable : Lab3.cpp
+	g++ -c Lab3.cpp -o Compiled
