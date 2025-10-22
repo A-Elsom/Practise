@@ -1,2 +1,2 @@
-executable : Lab3.cpp
-	g++ -c -g -fno-stack-protector Lab3.cpp -o Compiled
+executable : Lab4.cpp
+	g++ -c -g -fno-stack-protector Lab4.cpp -o Compiled
