@@ -116,6 +116,22 @@ void cleanup(Node*& head, int level) {
     return;
 }
 
+void cleanup1(Node*& head)
+{
+    Node* current = head;
+    Node* temp = current;
+    while (current->next != NULL)
+    {
+        temp = current;
+        current = current->next;
+        delete temp;
+    }
+    delete current;
+    head = nullptr;
+    current = nullptr;
+    temp = nullptr;
+}
+
 int main() {
 	// some example usage of these functions
 	Node* mylist = nullptr;
@@ -133,5 +149,4 @@ int main() {
 	print(mylist);
 	cleanup(mylist, 0);
 	print(mylist);
-
 }
