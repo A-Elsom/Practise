@@ -2,11 +2,44 @@
 
 Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, Node* rightSibling) {
 	// IMPLEMENT ME
-
+    name_ = name;
+    isDir_ = isDir;
+    parent_ = parent;
+    leftmostChild_ = leftmostChild;
+    rightSibling_ = rightSibling;
 }
 
 Node::~Node() {
-	// IMPLEMENT ME
+    // IMPLEMENT ME
+    if (rightSibling_ != nullptr)
+    {
+        clearChildren(this);
+    }
+    rightSibling_ = nullptr;
+    leftmostChild_ = nullptr;
+    parent_ = nullptr;
+    delete this;
+}
+
+void Node::clearChildren(Node* currentNode)
+{
+    Node *tempNode = currentNode;
+    if (currentNode->rightSibling_ == nullptr)
+    {
+        return;
+    }
+    else
+    {
+        clearChildren(currentNode->rightSibling_);
+        tempNode = currentNode->rightSibling_;
+        tempNode->rightSibling_ = nullptr;
+        tempNode->leftmostChild_ = nullptr;
+        tempNode->parent_ = nullptr;
+        delete tempNode;
+        tempNode = nullptr;
+        return;
+    }
+
 
 }
 

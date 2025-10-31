@@ -25,7 +25,9 @@ public:
 	// if not supplied by the caller. There is nothing special you need
 	// to do about this syntax: just implement the function as if they
 	// are not there.
-	Node(const string& name, bool isDir, Node* parent = nullptr, Node* leftmostChild = nullptr, Node* rightSibling = nullptr);
+    Node(const string& name, bool isDir, Node* parent = nullptr, Node* leftmostChild = nullptr, Node* rightSibling = nullptr);
+
+    void clearChildren(Node* currentNode);
 
 	// destructor
 	~Node();
