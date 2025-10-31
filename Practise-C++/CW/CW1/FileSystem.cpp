@@ -45,8 +45,20 @@ void Node::clearChildren(Node* currentNode)
 
 Node* Node::leftSibling() const {
 	// IMPLEMENT ME
-
-	return nullptr; // dummy
+    
+    if (parent_->leftmostChild_ != this)
+    {
+        Node* currentNode = parent_->leftmostChild_;
+        while (currentNode->rightSibling_ != this)
+        {
+            currentNode = currentNode->rightSibling_;
+        }
+        if (currentNode->rightSibling_ == this)
+        {
+            return currentNode;
+        }
+    }
+    return nullptr; // dummy
 }
 
 FileSystem::FileSystem() {
