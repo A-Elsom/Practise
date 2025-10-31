@@ -1,0 +1,2 @@
+executable : Lab4.cpp
+	g++ -c -g -fno-stack-protector Lab4.cpp -o Compiled
