@@ -379,7 +379,86 @@ string FileSystem::rmdir(const string& name) {
 }
 
 string FileSystem::mv(const string& src, const string& dest) {
-	// IMPLEMENT ME
-    
-	return ""; // dummy
+    // IMPLEMENT ME
+    if (src == dest)
+    {
+        return "source and destination are the same";
+    }
+    if (!curr_->containsRequestedDir(src))
+    {
+        return "source does not exist";
+    }
+    Node* srcNode = curr_->containsRequestedDir(src);
+    if (!curr_->containsRequestedDir(dest) && dest != "..")
+    {
+        srcNode->name_ = dest;
+    }
+    else if (curr_->containsRequestedDir(dest))
+    {
+        if (!curr_->containsRequestedDir(dest)->isDir_ && srcNode->isDir_)
+        {
+            return "source is a directory but destination is an existing file";
+        }
+        return "destination already has a file of same name";
+    }
+
+    Node* destNode = nullptr;
+
+    if (dest == "..")
+    {
+        if (curr_ != root_)
+        {
+            destNode = curr_->parent_;
+        }
+        else
+        {
+            return "invalid path";
+        }
+    }
+    else
+    {
+        destNode = curr_->containsRequestedDir(dest);
+    }
+
+    if (destNode->isDir_)
+    {
+        if (destNode->containsRequestedDir(src))
+        {
+            return "destination already has file/directory of same name";
+        }
+        if (curr_->leftmostChild_ == srcNode)
+        {
+            curr_->leftmostChild_ = srcNode->rightSibling_;
+        }
+        if (destNode->leftmostChild_ == nullptr)
+        {
+            destNode->leftmostChild_ = srcNode;
+            srcNode->parent_ = destNode;
+            srcNode->rightSibling_ = nullptr;
+        }
+        else
+        {
+            Node* tempNode = destNode->leftmostChild_;
+            srcNode->parent_ = destNode;
+            while (srcNode->compareOrder(tempNode->name_, 0) && tempNode->rightSibling_ != nullptr)
+            {
+                tempNode = tempNode->rightSibling_;
+            }
+            if (tempNode->rightSibling_ != nullptr)
+            {
+                srcNode->rightSibling_ = tempNode->rightSibling_;
+            }
+            else
+            {
+                srcNode->rightSibling_ = nullptr;
+            }
+            tempNode->rightSibling_ = srcNode;
+            tempNode = nullptr;
+        }
+    }
+    else
+    {
+        return "destination is not a directory";
+    }
+    return ""; // dummy
 }
