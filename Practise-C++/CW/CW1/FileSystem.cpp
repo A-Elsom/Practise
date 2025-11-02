@@ -11,9 +11,13 @@ Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, No
 
 Node::~Node() {
     // IMPLEMENT ME
-    if (rightSibling_ != nullptr)
+    if (isDir_)
     {
         clearChildren(this);
+    }
+    else
+    {
+        leftSibling()->rightSibling_ = rightSibling_;
     }
     rightSibling_ = nullptr;
     leftmostChild_ = nullptr;
@@ -23,7 +27,12 @@ Node::~Node() {
 
 void Node::clearChildren(Node* currentNode)
 {
-    Node *tempNode = currentNode;
+    Node* tempNode = currentNode;
+    if (currentNode->isDir_)
+    {
+        clearChildren(currentNode->leftmostChild_);
+        return;
+    }
     if (currentNode->rightSibling_ == nullptr)
     {
         return;
@@ -39,8 +48,20 @@ void Node::clearChildren(Node* currentNode)
         tempNode = nullptr;
         return;
     }
+}
 
-
+Node* Node::containsRequestedDir(string reqDir)
+{
+    Node* currentNode = this;
+    while (currentNode->rightSibling_ != nullptr)
+    {
+        if (currentNode->name_ == reqDir)
+        {
+            return currentNode;
+        }
+        currentNode = currentNode->rightSibling_;
+    }
+    return nullptr;
 }
 
 Node* Node::leftSibling() const {
@@ -62,8 +83,8 @@ Node* Node::leftSibling() const {
 }
 
 FileSystem::FileSystem() {
-	// IMPLEMENT ME
-
+    // IMPLEMENT ME
+    root_ = new Node("root", true);
 }
 
 // DO NOT CHANGE
@@ -123,13 +144,48 @@ FileSystem::FileSystem(const string& testinput) {
 
 FileSystem::~FileSystem() {
 	// IMPLEMENT ME
+    root_->clearChildren(root_);
+}
 
+void FileSystem::traverseAndClear(Node currentRoot)
+{
+    //start at root
+
+    //if current nodes rightsibling_ is a dir recurse
+
+    //remove if root_ clearChildren method works!!!!!!!
 }
 
 string FileSystem::cd(const string& path) {
 	// IMPLEMENT ME
-
-	return ""; // dummy
+    if (path == "..")
+    {
+        if (curr_ == root_)
+        {
+            return "invalid path";
+        }
+        curr_ = curr_->parent_;
+    }
+    else if (path == "/")
+    {
+        curr_ = root_;
+    }
+    else if (curr_->containsRequestedDir(path) != nullptr)
+    {
+        if (curr_->isDir_)
+        {
+            curr_ = curr_->containsRequestedDir(path);//inneficient use of cpu time
+        }
+        else
+        {
+            return "invalid path";
+        }
+    }
+    else
+    {
+        return "invalid path";
+    }
+    return ""; // dummy
 }
 
 // This is done for you as an example
@@ -151,26 +207,107 @@ string FileSystem::ls() const {
 
 string FileSystem::pwd() const {
 	// IMPLEMENT ME
-
-	return ""; // dummy
+    Node* currentNode = root_;
+    string buildString = "";
+    while (currentNode != curr_)
+    {
+        buildString += "/" + currentNode->name_;
+    }
+    buildString += curr_->name_;
+    currentNode = nullptr;
+    return buildString; // dummy
 }
 
 string FileSystem::tree() const {
 	// IMPLEMENT ME
+    Node* temp = curr_->leftmostChild_;
+    Node* tempDir = curr_;
+    int offset = 0;
+    string buildString = "";
+    while (temp->rightSibling_ != nullptr && tempDir == curr_)
+    {
+        if (temp->isDir_)
+        {
+            tempDir = temp;
+            buildString += temp->name_ + "/" + "\n";
+            temp = tempDir->leftmostChild_;
+        }
+        else
+        {
+            buildString += addOffset(offset) + temp->name_;
+            if (temp->rightSibling_ == nullptr)
+            {
+                temp = tempDir;
+                tempDir = tempDir->parent_;
+            }
+        }
+    }
 
-	return ""; // dummy
+    return buildString; // dummy
 }
 
-string FileSystem::touch(const string& name) {
-	// IMPLEMENT ME
+string FileSystem::addOffset(int offset) const
+{
+    string buildString = "";
+    for (int i = 0; i < offset; i++)
+    {
+        buildString += " ";
+    }
+    return buildString;
+}
 
-	return ""; // dummy
+string FileSystem::touch(const string& name)
+{
+    // IMPLEMENT ME
+    if (curr_->containsRequestedDir(name) != nullptr)
+    {
+        return "file/directory already exists";
+    }
+    Node* newNode = new Node(name, false, curr_);
+    Node* currentNode = curr_->leftmostChild_;
+    if (currentNode == nullptr)
+    {
+        curr_->leftmostChild_ = newNode;
+    }
+    else
+    {
+         while (currentNode->rightSibling_ != nullptr)
+        {
+            currentNode = currentNode->rightSibling_;
+        }
+        currentNode->rightSibling_ = newNode;
+    }
+    currentNode = nullptr;
+    return ""; // dummy
 }
 
 string FileSystem::mkdir(const string& name) {
 	// IMPLEMENT ME
-
-	return ""; // dummy
+    if (curr_->containsRequestedDir(name) != nullptr)
+    {
+        if ((curr_->containsRequestedDir(name))->isDir_)
+        {
+            return "file/directory already exists";
+        }
+    }
+     Node* newDir = new Node(name, true, curr_);
+    if (curr_->leftmostChild_ == nullptr)
+    {
+        curr_->leftmostChild_ = newDir;
+        newDir = nullptr;
+    }
+    else
+    {
+        Node* currentNode = curr_->leftmostChild_;
+        while (currentNode->rightSibling_ != nullptr)
+        {
+            currentNode = currentNode->rightSibling_;
+        }
+        currentNode->rightSibling_ = newDir;
+        currentNode = nullptr;
+        newDir = nullptr;
+    }
+    return ""; // dummy
 }
 
 string FileSystem::rm(const string& name) {

@@ -27,6 +27,8 @@ public:
 	// are not there.
     Node(const string& name, bool isDir, Node* parent = nullptr, Node* leftmostChild = nullptr, Node* rightSibling = nullptr);
 
+    Node* containsRequestedDir(string reqDir);
+
     void clearChildren(Node* currentNode);
 
 	// destructor
@@ -50,7 +52,9 @@ public:
 	FileSystem(const string& testinput);
 
 	// destructor
-	~FileSystem();
+    ~FileSystem();
+
+    void traverseAndClear(Node currentRoot);
 
 	// change directory
 	string cd(const string& path);
@@ -62,7 +66,9 @@ public:
 	[[nodiscard]] string tree() const;
 
 	// print working directory
-	[[nodiscard]] string pwd() const;
+    [[nodiscard]] string pwd() const;
+
+    string addOffset(int) const;
 
 	// create new file
 	string touch(const string& name);
