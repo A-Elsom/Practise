@@ -11,23 +11,64 @@ Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, No
     rightSibling_ = rightSibling;
 }
 
-Node::~Node() {
+/*
+
+
+Node::~Node()
+{
     // IMPLEMENT ME
     if (isDir_)
     {
         clearChildren(this);
     }
-    else
-    {
-        leftSibling()->rightSibling_ = rightSibling_;
-    }
+    std::cout << "1";
+    leftSibling()->rightSibling_ = rightSibling_;
+    std::cout << "2";
     rightSibling_ = nullptr;
     leftmostChild_ = nullptr;
     parent_ = nullptr;
-    delete this;
+    std::cout << "3";
+}
+*/
+
+Node::~Node()
+{
+    printf("deleted");
+    if (isDir_)
+    {
+        clearChildren(this);
+    }
+    parent_ = nullptr;
+    rightSibling_ = nullptr;
+    leftmostChild_ = nullptr;
 }
 
 void Node::clearChildren(Node* currentNode)
+{
+    if (currentNode->isDir_)
+    {
+        clearChildren(currentNode->leftmostChild_);
+    }
+
+    if (currentNode->rightSibling_ == nullptr)
+    {
+        currentNode->parent_ = nullptr;
+        currentNode->leftmostChild_ = nullptr;
+        currentNode = nullptr;
+        return;
+    }
+    else
+    {
+        clearChildren(currentNode->rightSibling_);
+        currentNode->parent_ = nullptr;
+        currentNode->leftmostChild_ = nullptr;
+        currentNode = nullptr;
+        return;
+    }
+
+}
+
+/*void clearChildren1(Node* currentNode)
 {
     Node* tempNode = currentNode;
     if (currentNode->isDir_)
@@ -47,11 +88,11 @@ void Node::clearChildren(Node* currentNode)
         tempNode->leftmostChild_ = nullptr;
         tempNode->parent_ = nullptr;
         delete tempNode;
-        tempNode = nullptr;
+        delete currentNode;
         return;
     }
 }
-
+*/
 Node* Node::containsRequestedDir(string reqDir)
 {
     Node* currentNode = leftmostChild_;
@@ -178,8 +219,8 @@ FileSystem::FileSystem(const string& testinput) {
 }
 
 FileSystem::~FileSystem() {
-	// IMPLEMENT ME
-    root_->clearChildren(root_);
+    // IMPLEMENT ME
+    root_->~Node();
 }
 
 void FileSystem::traverseAndClear(Node currentRoot)
@@ -427,18 +468,19 @@ string FileSystem::mkdir(const string& name) {
 
 string FileSystem::rm(const string& name) {
     // IMPLEMENT ME
+    std::cout << "-1";
+    Node* rmNode = curr_->containsRequestedDir(name);
+    if (rmNode == nullptr)
     {
-        Node* rmNode = curr_->containsRequestedDir(name);
-        if (rmNode == nullptr)
-        {
-            return "file not found";
-        }
-        else if (rmNode->isDir_)
-        {
-            return "not a file";
-        }
-        
+        return "file not found";
     }
+    else if (rmNode->isDir_)
+    {
+        return "not a file";
+    }
+    std::cout << "0";
+    delete rmNode;
+    //rmNode = nullptr;
     return ""; // dummy
 }
 

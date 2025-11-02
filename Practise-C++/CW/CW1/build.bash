@@ -1,2 +1,2 @@
 make
-./main a
+./main
