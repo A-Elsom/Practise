@@ -1,6 +1,7 @@
 #include "FileSystem.h"
 
-Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, Node* rightSibling) {
+Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, Node* rightSibling)
+{
 	// IMPLEMENT ME
     name_ = name;
     isDir_ = isDir;
@@ -63,6 +64,31 @@ Node* Node::containsRequestedDir(string reqDir)
     }
     return nullptr;
 }
+
+bool Node::compareOrder(string checkName, int orderIndex)
+{
+    bool isGreater = false;
+    int convCharThis = tolower(static_cast<int>(name_[orderIndex]));
+    int convCharCheck = tolower(static_cast<int>(checkName[orderIndex]));
+    if (convCharCheck == convCharThis)
+    {
+        isGreater = compareOrder(checkName, orderIndex + 1);
+    }
+    else
+    {
+        if (convCharCheck > convCharThis)
+        {
+            isGreater = false;
+        }
+        else
+        {
+            isGreater = true;
+        }
+    }
+    return isGreater;
+
+}
+
 
 Node* Node::leftSibling() const {
 	// IMPLEMENT ME
@@ -268,16 +294,22 @@ string FileSystem::touch(const string& name)
     if (currentNode == nullptr)
     {
         curr_->leftmostChild_ = newNode;
+        newNode = nullptr;
     }
     else
     {
-         while (currentNode->rightSibling_ != nullptr)
+        while (newNode->compareOrder(currentNode->name_,0) == false && currentNode->rightSibling_ != nullptr)
         {
             currentNode = currentNode->rightSibling_;
+        }
+        if (currentNode->rightSibling_ != nullptr)
+        {
+            newNode->rightSibling_ = currentNode->rightSibling_;
         }
         currentNode->rightSibling_ = newNode;
     }
     currentNode = nullptr;
+    newNode = nullptr;
     return ""; // dummy
 }
 
@@ -299,9 +331,13 @@ string FileSystem::mkdir(const string& name) {
     else
     {
         Node* currentNode = curr_->leftmostChild_;
-        while (currentNode->rightSibling_ != nullptr)
+        while (newDir->compareOrder(currentNode->name_, 0) && currentNode->rightSibling_ != nullptr)
         {
             currentNode = currentNode->rightSibling_;
+        }
+        if (currentNode->rightSibling_ != nullptr)
+        {
+            newDir->rightSibling_ = currentNode->rightSibling_;
         }
         currentNode->rightSibling_ = newDir;
         currentNode = nullptr;
@@ -344,6 +380,6 @@ string FileSystem::rmdir(const string& name) {
 
 string FileSystem::mv(const string& src, const string& dest) {
 	// IMPLEMENT ME
-
+    
 	return ""; // dummy
 }

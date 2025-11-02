@@ -11,11 +11,10 @@ class Node {
 	Node* parent_;        // pointer to parent
 	Node* leftmostChild_; // pointer to leftmost child
 	Node* rightSibling_;  // pointer to next (right side) sibling
-
 	// return pointer to previous (left side) sibling
 	// (if your compiler is too old to understand [[nodiscard]],
 	// you can remove this keyword, and same for other functions below)
-	[[nodiscard]] Node* leftSibling() const;
+    [[nodiscard]] Node* leftSibling() const;
 
 	// you are allowed to add other members
 
@@ -28,6 +27,8 @@ public:
     Node(const string& name, bool isDir, Node* parent = nullptr, Node* leftmostChild = nullptr, Node* rightSibling = nullptr);
 
     Node* containsRequestedDir(string reqDir);
+
+    bool compareOrder(string checkName, int orderIndex);
 
     void clearChildren(Node* currentNode);
 
