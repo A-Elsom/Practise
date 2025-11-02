@@ -311,15 +311,35 @@ string FileSystem::mkdir(const string& name) {
 }
 
 string FileSystem::rm(const string& name) {
-	// IMPLEMENT ME
-
-	return ""; // dummy
+    // IMPLEMENT ME
+    Node* rmNode = curr_->containsRequestedDir(name);
+    if (rmNode == nullptr)
+    {
+        return "file not found";
+    }
+    else if (rmNode->isDir_)
+    {
+        return "not a file";
+    }
+    rmNode->~Node();
+    rmNode = nullptr;
+    return ""; // dummy
 }
 
 string FileSystem::rmdir(const string& name) {
-	// IMPLEMENT ME
-
-	return ""; // dummy
+    // IMPLEMENT ME
+    Node* rmDirNode = curr_->containsRequestedDir(name);
+    if (rmDirNode == nullptr)
+    {
+        return "directory not found";
+    }
+    else if(!rmDirNode->isDir_)
+    {
+        return "not a directory";
+    }
+    rmDirNode->~Node();
+    rmDirNode = nullptr;
+    return ""; // dummy
 }
 
 string FileSystem::mv(const string& src, const string& dest) {
