@@ -1,4 +1,5 @@
 #include "FileSystem.h"
+#include <iostream>
 
 Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, Node* rightSibling)
 {
@@ -53,7 +54,7 @@ void Node::clearChildren(Node* currentNode)
 
 Node* Node::containsRequestedDir(string reqDir)
 {
-    Node* currentNode = this;
+    Node* currentNode = leftmostChild_;
     while (currentNode->rightSibling_ != nullptr)
     {
         if (currentNode->name_ == reqDir)
@@ -72,6 +73,14 @@ bool Node::compareOrder(string checkName, int orderIndex)
     int convCharCheck = tolower(static_cast<int>(checkName[orderIndex]));
     if (convCharCheck == convCharThis)
     {
+        if (checkName.length() < orderIndex)
+        {
+            return true;
+        }
+        if (name_.length() < orderIndex)
+        {
+            return false;
+        }
         isGreater = compareOrder(checkName, orderIndex + 1);
     }
     else
@@ -89,8 +98,8 @@ bool Node::compareOrder(string checkName, int orderIndex)
 
 }
 
-
-Node* Node::leftSibling() const {
+Node* Node::leftSibling() const
+{
 	// IMPLEMENT ME
     
     if (parent_->leftmostChild_ != this)
@@ -110,7 +119,7 @@ Node* Node::leftSibling() const {
 
 FileSystem::FileSystem() {
     // IMPLEMENT ME
-    root_ = new Node("root", true);
+    root_ = new Node("", true);
 }
 
 // DO NOT CHANGE
@@ -183,7 +192,7 @@ void FileSystem::traverseAndClear(Node currentRoot)
 }
 
 string FileSystem::cd(const string& path) {
-	// IMPLEMENT ME
+    // IMPLEMENT ME
     if (path == "..")
     {
         if (curr_ == root_)
@@ -235,11 +244,22 @@ string FileSystem::pwd() const {
 	// IMPLEMENT ME
     Node* currentNode = root_;
     string buildString = "";
+    Node* tempNode = curr_;
+    
     while (currentNode != curr_)
     {
-        buildString += "/" + currentNode->name_;
+        if (currentNode != root_)
+        {
+             buildString += "/" + currentNode->name_;
+        }
+        while (tempNode->parent_ != currentNode)
+        {
+            tempNode = tempNode->parent_;
+        }
+        currentNode = tempNode;
+        tempNode = curr_;
     }
-    buildString += curr_->name_;
+    buildString += "/" + curr_->name_;
     currentNode = nullptr;
     return buildString; // dummy
 }
@@ -248,28 +268,43 @@ string FileSystem::tree() const {
 	// IMPLEMENT ME
     Node* temp = curr_->leftmostChild_;
     Node* tempDir = curr_;
+    
     int offset = 0;
     string buildString = "";
-    while (temp->rightSibling_ != nullptr && tempDir == curr_)
+    buildString += displayDirChildren(curr_, 0);
+
+    return buildString; // dummy
+}
+
+string FileSystem::displayDirChildren(Node* currentDir, int offset) const
+{
+    if (!currentDir->isDir_)
     {
-        if (temp->isDir_)
+        return "requested directory is not a directory";
+    }
+
+    string createString = "";
+    createString += addOffset(offset) + currentDir->name_ + "/";
+    offset++;
+    Node* currentNode = currentDir->leftmostChild_;
+
+    while (currentNode != nullptr)
+    {
+        
+        if (currentNode->isDir_)
         {
-            tempDir = temp;
-            buildString += temp->name_ + "/" + "\n";
-            temp = tempDir->leftmostChild_;
+            createString += "\n" + displayDirChildren(currentNode, offset);
         }
         else
         {
-            buildString += addOffset(offset) + temp->name_;
-            if (temp->rightSibling_ == nullptr)
-            {
-                temp = tempDir;
-                tempDir = tempDir->parent_;
-            }
+            createString += "\n" + addOffset(offset) + currentNode->name_;
         }
+        
+        currentNode = currentNode->rightSibling_;
     }
 
-    return buildString; // dummy
+    currentNode = nullptr;
+    return createString;
 }
 
 string FileSystem::addOffset(int offset) const
@@ -298,15 +333,38 @@ string FileSystem::touch(const string& name)
     }
     else
     {
-        while (newNode->compareOrder(currentNode->name_,0) == false && currentNode->rightSibling_ != nullptr)
+        if (currentNode->rightSibling_ == nullptr)
         {
-            currentNode = currentNode->rightSibling_;
+            if (newNode->compareOrder(currentNode->name_, 0) == false)
+            {
+                curr_->leftmostChild_ = newNode;
+                newNode->rightSibling_ = currentNode;
+            }
+            else
+            {
+                currentNode->rightSibling_ = newNode;
+            }
         }
-        if (currentNode->rightSibling_ != nullptr)
+        else
         {
-            newNode->rightSibling_ = currentNode->rightSibling_;
+            while (newNode->compareOrder(currentNode->name_, 0) == true && currentNode->rightSibling_ != nullptr)
+            {
+                currentNode = currentNode->rightSibling_;
+            }
+            if (currentNode->rightSibling_ != nullptr)
+            {
+                newNode->rightSibling_ = currentNode->rightSibling_;
+            }
+            if (newNode->compareOrder(currentNode->name_, 0) == false)
+            {
+                curr_->leftmostChild_ = newNode;
+                newNode->rightSibling_ = currentNode;
+            }
+            else
+            {
+                currentNode->rightSibling_ = newNode;
+            }
         }
-        currentNode->rightSibling_ = newNode;
     }
     currentNode = nullptr;
     newNode = nullptr;
@@ -331,34 +389,56 @@ string FileSystem::mkdir(const string& name) {
     else
     {
         Node* currentNode = curr_->leftmostChild_;
-        while (newDir->compareOrder(currentNode->name_, 0) && currentNode->rightSibling_ != nullptr)
+        if (currentNode->rightSibling_ == nullptr)
         {
-            currentNode = currentNode->rightSibling_;
+            if (newDir->compareOrder(currentNode->name_, 0) == false)
+            {
+                curr_->leftmostChild_ = newDir;
+                newDir->rightSibling_ = currentNode;
+            }
+            else
+            {
+                currentNode->rightSibling_ = newDir;
+            }
         }
-        if (currentNode->rightSibling_ != nullptr)
+        else
         {
-            newDir->rightSibling_ = currentNode->rightSibling_;
+            while (newDir->compareOrder(currentNode->name_, 0) == true && currentNode->rightSibling_ != nullptr)
+            {
+                currentNode = currentNode->rightSibling_;
+            }
+            if (currentNode->rightSibling_ != nullptr)
+            {
+                newDir->rightSibling_ = currentNode->rightSibling_;
+            }
+            if (newDir->compareOrder(currentNode->name_, 0) == false)
+            {
+                curr_->leftmostChild_ = newDir;
+                newDir->rightSibling_ = currentNode;
+            }
+            else
+            {
+                currentNode->rightSibling_ = newDir;
+            }
         }
-        currentNode->rightSibling_ = newDir;
-        currentNode = nullptr;
-        newDir = nullptr;
     }
     return ""; // dummy
 }
 
 string FileSystem::rm(const string& name) {
     // IMPLEMENT ME
-    Node* rmNode = curr_->containsRequestedDir(name);
-    if (rmNode == nullptr)
     {
-        return "file not found";
+        Node* rmNode = curr_->containsRequestedDir(name);
+        if (rmNode == nullptr)
+        {
+            return "file not found";
+        }
+        else if (rmNode->isDir_)
+        {
+            return "not a file";
+        }
+        
     }
-    else if (rmNode->isDir_)
-    {
-        return "not a file";
-    }
-    rmNode->~Node();
-    rmNode = nullptr;
     return ""; // dummy
 }
 

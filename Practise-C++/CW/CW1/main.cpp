@@ -6,7 +6,7 @@ using namespace std;
 
 int main() {
 
-	FileSystem* fs = new FileSystem();
+	FileSystem* fs = new FileSystem("1");
 
 	string input, output, cmd, arg1, arg2;
 

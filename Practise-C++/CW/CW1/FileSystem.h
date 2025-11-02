@@ -69,8 +69,6 @@ public:
 	// print working directory
     [[nodiscard]] string pwd() const;
 
-    string addOffset(int) const;
-
 	// create new file
 	string touch(const string& name);
 
@@ -84,7 +82,11 @@ public:
 	string rmdir(const string& name);
 
 	// move file/directory from src to dest
-	string mv(const string& src, const string& dest);
+    string mv(const string& src, const string& dest);
+
+    string displayDirChildren(Node*, int) const;
+
+    string addOffset(int) const;
 };
 
 #endif
