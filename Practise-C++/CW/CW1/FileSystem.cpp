@@ -378,7 +378,7 @@ string FileSystem::touch(const string& name)
         {
             if (newNode->compareOrder(currentNode->name_, 0) == false)
             {
-                curr_->leftmostChild_ = newNode;
+                //curr_->leftmostChild_ = newNode; !!dont understand why this is here
                 newNode->rightSibling_ = currentNode;
             }
             else
@@ -398,11 +398,13 @@ string FileSystem::touch(const string& name)
             }
             if (newNode->compareOrder(currentNode->name_, 0) == false)
             {
-                curr_->leftmostChild_ = newNode;
+                //curr_->leftmostChild_ = newNode; !!again dont understand why i put this here
+                currentNode->leftSibling()->rightSibling_ = newNode;
                 newNode->rightSibling_ = currentNode;
             }
             else
             {
+                newNode->rightSibling_ = currentNode->rightSibling_;
                 currentNode->rightSibling_ = newNode;
             }
         }
