@@ -33,38 +33,49 @@ Node::~Node()
 
 Node::~Node()
 {
-    printf("deleted");
-    if (isDir_)
+    std::cout<<name_<<" : starting Delete \n";
+    if (isDir_ && leftmostChild_ != nullptr)
     {
-        clearChildren(this);
+        std::cout<<name_<<" : deleting driectory children\n";
+        clearChildren(leftmostChild_);
     }
+    if(parent_->leftmostChild_ == this)
+    {
+        parent_->leftmostChild_ = rightSibling_;
+    }
+    else
+    {
+        leftSibling()->rightSibling_ = rightSibling_;
+    }
+    /*
+    Node* parentCopy = parent_;
+    Node* currentNode = parentCopy->leftmostChild_;
+    while(currentNode->rightSibling_ != nullptr){
+        std::cout<<currentNode->name_<< " -> ";
+        currentNode = currentNode->rightSibling_;
+    }
+    std::cout<<currentNode->name_;
+    */
     parent_ = nullptr;
     rightSibling_ = nullptr;
     leftmostChild_ = nullptr;
+    
+    std::cout<<"deleteComplete\n";
 }
 
 void Node::clearChildren(Node* currentNode)
 {
-    if (currentNode->isDir_)
+    Node* tmp = currentNode;
+    Node* tmp1 = tmp;
+    while(tmp->rightSibling_ != nullptr)
     {
-        clearChildren(currentNode->leftmostChild_);
+        tmp1 = tmp;
+        tmp = tmp->rightSibling_;
+        delete tmp1;
+        
     }
-
-    if (currentNode->rightSibling_ == nullptr)
-    {
-        currentNode->parent_ = nullptr;
-        currentNode->leftmostChild_ = nullptr;
-        currentNode = nullptr;
-        return;
-    }
-    else
-    {
-        clearChildren(currentNode->rightSibling_);
-        currentNode->parent_ = nullptr;
-        currentNode->leftmostChild_ = nullptr;
-        currentNode = nullptr;
-        return;
-    }
+    tmp1 = nullptr;
+    delete tmp;
 
 }
 
@@ -436,7 +447,7 @@ string FileSystem::mkdir(const string& name) {
         {
             if (newDir->compareOrder(currentNode->name_, 0) == false)
             {
-                curr_->leftmostChild_ = newDir;
+                //curr_->leftmostChild_ = newDir;
                 newDir->rightSibling_ = currentNode;
             }
             else
@@ -456,7 +467,8 @@ string FileSystem::mkdir(const string& name) {
             }
             if (newDir->compareOrder(currentNode->name_, 0) == false)
             {
-                curr_->leftmostChild_ = newDir;
+                //curr_->leftmostChild_ = newDir;
+                currentNode->leftSibling()->rightSibling_ = newDir;
                 newDir->rightSibling_ = currentNode;
             }
             else
@@ -470,7 +482,6 @@ string FileSystem::mkdir(const string& name) {
 
 string FileSystem::rm(const string& name) {
     // IMPLEMENT ME
-    std::cout << "-1";
     Node* rmNode = curr_->containsRequestedDir(name);
     if (rmNode == nullptr)
     {
@@ -480,7 +491,6 @@ string FileSystem::rm(const string& name) {
     {
         return "not a file";
     }
-    std::cout << "0";
     delete rmNode;
     //rmNode = nullptr;
     return ""; // dummy
