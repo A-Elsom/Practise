@@ -182,7 +182,7 @@ Node* Node::leftSibling() const
 
 FileSystem::FileSystem() {
     // IMPLEMENT ME
-    root_ = new Node("", true);
+    curr_ = root_ = new Node("", true);
 }
 
 // DO NOT CHANGE
@@ -272,7 +272,7 @@ string FileSystem::cd(const string& path) {
     }
     else if (curr_->containsRequestedDir(path) != nullptr)
     {
-        if (curr_->isDir_)
+        if (curr_->containsRequestedDir(path)->isDir_)
         {
             curr_ = curr_->containsRequestedDir(path);//inneficient use of cpu time
         }
