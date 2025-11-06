@@ -115,6 +115,9 @@ Node* Node::containsRequestedDir(string reqDir)
         }
         currentNode = currentNode->rightSibling_;
     }
+    if(currentNode->name_ == reqDir){
+        return currentNode;
+    }
     return nullptr;
 }
 
@@ -513,23 +516,148 @@ string FileSystem::rmdir(const string& name) {
 }
 
 string FileSystem::mv(const string& src, const string& dest) {
+    if(src == dest){
+        return "source and destination are the same";
+    }
+    
+    if(curr_->containsRequestedDir(src) == nullptr){
+        return "source does not exist";
+    }
+
+    Node* srcNode = curr_->containsRequestedDir(src);
+    Node* destNode = curr_->containsRequestedDir(dest);
+    //std::cout<<destNode->name_;
+
+    if(destNode != nullptr || dest == ".."){
+        if(destNode != nullptr){
+            if(destNode->isDir_ == false && srcNode->isDir_ == true){
+                    return "source is a directory but destination is an existing file";
+            }
+
+            if(destNode->isDir_ == true){
+                
+                //move source to destination
+                //check if it is the start of curr directory
+                if(curr_->leftmostChild_ == srcNode){
+                    if(srcNode->rightSibling_ != nullptr){
+                        curr_->leftmostChild_ = srcNode->rightSibling_;
+                    }
+                    else{
+                        curr_->leftmostChild_ = nullptr;
+                    }
+                }//check if final in curr directory
+                else{
+                    if(srcNode->rightSibling_ == nullptr){
+                        srcNode->leftSibling()->rightSibling_ = nullptr;
+                    }
+                    else{
+                        srcNode->leftSibling()->rightSibling_ = srcNode->rightSibling_;
+                    }
+                }
+                //now move to destination directory
+                srcNode->parent_ = destNode;
+                //slot in alphabetically
+                if(destNode->leftmostChild_ != nullptr){
+                    Node* tmp = destNode->leftmostChild_;
+                    while(tmp->rightSibling_ != nullptr && srcNode->compareOrder(tmp->name_, 0) == false){
+                        tmp = tmp->rightSibling_;
+                    }
+                    if(tmp->rightSibling_ == nullptr){
+                        tmp->rightSibling_ = srcNode;
+                        srcNode->rightSibling_ = nullptr;
+                    }
+                    else{
+                        srcNode->rightSibling_ = tmp->rightSibling_;
+                        tmp->rightSibling_ = srcNode;
+                    }
+                    tmp = nullptr;
+                    srcNode = nullptr;
+                    destNode = nullptr;
+                    return "";
+                }
+            }
+            else if(dest == ".."){
+                if(curr_ != root_){
+                    return "invalid path";
+                }
+                else{
+                    destNode = curr_->parent_;
+                    //move src to dest
+                    //check if it is the start of curr directory
+                    if(curr_->leftmostChild_ == srcNode){
+                        if(srcNode->rightSibling_ != nullptr){
+                            curr_->leftmostChild_ = srcNode->rightSibling_;
+                        }
+                        else{
+                            curr_->leftmostChild_ = nullptr;
+                        }
+                    }//check if final in curr directory
+                    else{
+                        if(srcNode->rightSibling_ == nullptr){
+                            srcNode->leftSibling()->rightSibling_ = nullptr;
+                        }
+                        else{
+                            srcNode->leftSibling()->rightSibling_ = srcNode->rightSibling_;
+                        }
+                    }
+                    //now move to destination directory
+                    srcNode->parent_ = destNode;
+                    //slot in alphabetically
+                    if(destNode->leftmostChild_ != nullptr){
+                        Node* tmp = destNode->leftmostChild_;
+                        while(tmp->rightSibling_ != nullptr && srcNode->compareOrder(tmp->name_, 0) == false){
+                            tmp = tmp->rightSibling_;
+                        }
+                        if(tmp->rightSibling_ == nullptr){
+                            tmp->rightSibling_ = srcNode;
+                            srcNode->rightSibling_ = nullptr;
+                        }
+                        else{
+                            srcNode->rightSibling_ = tmp->rightSibling_;
+                            tmp->rightSibling_ = srcNode;
+                        }
+                        tmp = nullptr;
+                        srcNode = nullptr;
+                        destNode = nullptr;
+                        return "";
+                    }
+                }
+            }
+            else{
+                return "destination already has file/directory of same name";
+            }
+        }
+        
+    }
+    else{
+        //rename source to dest
+        std::cout<<"changing name of file/ directory";
+        srcNode->name_ = dest;
+        return "";
+    }
+    return "";
+
+}
+/*
+string FileSystem::mv(const string& src, const string& dest) {
     // IMPLEMENT ME
     if (src == dest)
     {
         return "source and destination are the same";
     }
-    if (!curr_->containsRequestedDir(src))
+    if (curr_->containsRequestedDir(src) == nullptr)
     {
         return "source does not exist";
     }
     Node* srcNode = curr_->containsRequestedDir(src);
-    if (!curr_->containsRequestedDir(dest) && dest != "..")
+    if (curr_->containsRequestedDir(dest) == nullptr && dest != "..")
     {
         srcNode->name_ = dest;
+        return "";
     }
-    else if (curr_->containsRequestedDir(dest))
+    else if (curr_->containsRequestedDir(dest) != nullptr)
     {
-        if (!curr_->containsRequestedDir(dest)->isDir_ && srcNode->isDir_)
+        if (curr_->containsRequestedDir(dest)->isDir_ == false && srcNode->isDir_)
         {
             return "source is a directory but destination is an existing file";
         }
@@ -552,11 +680,12 @@ string FileSystem::mv(const string& src, const string& dest) {
     else
     {
         destNode = curr_->containsRequestedDir(dest);
+        std::cout<<destNode->name_;
     }
 
     if (destNode->isDir_)
     {
-        if (destNode->containsRequestedDir(src))
+        if (destNode->containsRequestedDir(src) != nullptr)
         {
             return "destination already has file/directory of same name";
         }
@@ -595,4 +724,4 @@ string FileSystem::mv(const string& src, const string& dest) {
         return "destination is not a directory";
     }
     return ""; // dummy
-}
+}*/
