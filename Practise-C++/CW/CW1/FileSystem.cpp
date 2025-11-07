@@ -115,25 +115,75 @@ void Node::clearChildren(Node* currentNode)
 Node* Node::containsRequestedDir(string reqDir)
 {
     Node* currentNode = leftmostChild_;
-    while (currentNode->rightSibling_ != nullptr)
-    {
-        if (currentNode->name_ == reqDir)
+    if(currentNode != nullptr){
+        while (currentNode->rightSibling_ != nullptr)
         {
+            if (currentNode->name_ == reqDir)
+            {
+                return currentNode;
+            }
+            currentNode = currentNode->rightSibling_;
+        }
+        if(currentNode->name_ == reqDir){
             return currentNode;
         }
-        currentNode = currentNode->rightSibling_;
-    }
-    if(currentNode->name_ == reqDir){
-        return currentNode;
-    }
+    }   
     return nullptr;
 }
 
 bool Node::compareOrder(string checkName, int orderIndex)
 {
+    //check if they are of the same case
     bool isGreater = false;
-    int convCharThis = tolower(static_cast<int>(name_[orderIndex]));
-    int convCharCheck = tolower(static_cast<int>(checkName[orderIndex]));
+    bool checkCase1 = checkName[orderIndex] == toupper(checkName[orderIndex]);
+    bool checkCase2 = name_[orderIndex] == toupper(name_[orderIndex]);
+    if(checkCase1 == checkCase2){
+        if(checkName[orderIndex] == name_[orderIndex]){
+            if(checkName.length() < orderIndex){
+                return true;
+            }
+            if(name_.length() < orderIndex){
+                return false;
+            }
+            isGreater = compareOrder(checkName, orderIndex + 1);
+        }
+        else if(checkName[orderIndex] > name_[orderIndex]){
+            isGreater = false;
+        }
+        else{
+            isGreater = true;
+        }
+    }
+    else if(checkCase1 == true && checkCase2 == false){
+        isGreater = true;
+    }
+    else if(checkCase1 == false && checkCase2 == true){
+        isGreater = false;
+    }
+    else{
+        isGreater = false;
+    }
+    return isGreater;
+    //check if checkName is greater than name_ return false
+    //otherwise name_ must be greater return true
+
+
+    /*
+    //bool isGreater = false;
+    std::cout << "checking order";
+    if(name_.compare(checkName) == 0){
+        return true;
+    }
+    else if(name_.compare(checkName) > 0){
+        return true;
+    }
+    else{
+        return false;
+    }
+    
+    char convCharThis = toupper(static_cast<char>(name_.at(orderIndex)));
+    char convCharCheck = toupper(static_cast<char>(checkName.at(orderIndex)));
+
     if (convCharCheck == convCharThis)
     {
         if (checkName.length() < orderIndex)
@@ -151,6 +201,7 @@ bool Node::compareOrder(string checkName, int orderIndex)
         if (convCharCheck > convCharThis)
         {
             isGreater = false;
+            
         }
         else
         {
@@ -158,7 +209,7 @@ bool Node::compareOrder(string checkName, int orderIndex)
         }
     }
     return isGreater;
-
+    */
 }
 
 Node* Node::leftSibling() const
@@ -389,52 +440,57 @@ string FileSystem::touch(const string& name)
     {
         return "file/directory already exists";
     }
-    Node* newNode = new Node(name, false, curr_);
-    Node* currentNode = curr_->leftmostChild_;
-    if (currentNode == nullptr)
+     Node* newDir = new Node(name, false, curr_);
+    if (curr_->leftmostChild_ == nullptr)
     {
-        curr_->leftmostChild_ = newNode;
-        newNode = nullptr;
+        curr_->leftmostChild_ = newDir;
+        newDir = nullptr;
     }
     else
     {
+        Node* currentNode = curr_->leftmostChild_;
         if (currentNode->rightSibling_ == nullptr)
         {
-            if (newNode->compareOrder(currentNode->name_, 0) == false)
+            if (newDir->compareOrder(currentNode->name_, 0) == false)
             {
-                //curr_->leftmostChild_ = newNode; !!dont understand why this is here
-                newNode->rightSibling_ = currentNode;
+                //curr_->leftmostChild_ = newDir;
+                newDir->rightSibling_ = currentNode;
             }
             else
             {
-                currentNode->rightSibling_ = newNode;
+                currentNode->rightSibling_ = newDir;
             }
         }
         else
         {
-            while (newNode->compareOrder(currentNode->name_, 0) == true && currentNode->rightSibling_ != nullptr)
+            while (newDir->compareOrder(currentNode->name_, 0) == true && currentNode->rightSibling_ != nullptr)
             {
                 currentNode = currentNode->rightSibling_;
             }
-            if (currentNode->rightSibling_ != nullptr)
+            /*
+            if (currentNode->rightSibling_ == nullptr)
             {
-                newNode->rightSibling_ = currentNode->rightSibling_;
+                //newDir->rightSibling_ = currentNode->rightSibling_;
+                currentNode->rightSibling_
             }
-            if (newNode->compareOrder(currentNode->name_, 0) == false)
+                */
+            if (newDir->compareOrder(currentNode->name_, 0) == false)
             {
-                //curr_->leftmostChild_ = newNode; !!again dont understand why i put this here
-                currentNode->leftSibling()->rightSibling_ = newNode;
-                newNode->rightSibling_ = currentNode;
+                //curr_->leftmostChild_ = newDir;
+                if(currentNode == curr_->leftmostChild_){
+                    curr_->leftmostChild_ = newDir;
+                }else{
+                    currentNode->leftSibling()->rightSibling_ = newDir;
+                }
+                
+                newDir->rightSibling_ = currentNode;
             }
             else
             {
-                newNode->rightSibling_ = currentNode->rightSibling_;
-                currentNode->rightSibling_ = newNode;
+                currentNode->rightSibling_ = newDir;
             }
         }
     }
-    currentNode = nullptr;
-    newNode = nullptr;
     return ""; // dummy
 }
 
@@ -474,14 +530,22 @@ string FileSystem::mkdir(const string& name) {
             {
                 currentNode = currentNode->rightSibling_;
             }
-            if (currentNode->rightSibling_ != nullptr)
+            /*
+            if (currentNode->rightSibling_ == nullptr)
             {
-                newDir->rightSibling_ = currentNode->rightSibling_;
+                //newDir->rightSibling_ = currentNode->rightSibling_;
+                currentNode->rightSibling_
             }
+                */
             if (newDir->compareOrder(currentNode->name_, 0) == false)
             {
                 //curr_->leftmostChild_ = newDir;
-                currentNode->leftSibling()->rightSibling_ = newDir;
+                if(currentNode == curr_->leftmostChild_){
+                    curr_->leftmostChild_ = newDir;
+                }else{
+                    currentNode->leftSibling()->rightSibling_ = newDir;
+                }
+                
                 newDir->rightSibling_ = currentNode;
             }
             else
@@ -520,11 +584,212 @@ string FileSystem::rmdir(const string& name) {
     {
         return "not a directory";
     }
+    if(rmDirNode->leftmostChild_ != nullptr){
+        return "directory not empty";
+    }
     rmDirNode->~Node();
     rmDirNode = nullptr;
     return ""; // dummy
 }
 
+string FileSystem::mv(const string& src, const string& dest){
+    int mode = -1; // used to show whether src is being moved or renamed: 0 = move, 1 = rename, 2 = parent dir move
+    if(src == dest){
+        return "source and destination are the same";
+    }
+    //check if source exists
+    if(curr_->containsRequestedDir(src) == nullptr){
+        return "source does not exist";
+    }
+    else{
+        //find whether assigning new name to source or moving to destination
+        //error checking
+        Node* destNode = curr_->containsRequestedDir(dest);
+        Node* srcNode = curr_->containsRequestedDir(src);
+        //check whether the destination exists in curr_
+        if(destNode != nullptr){
+            //check if dest is a file or dir
+            if(destNode->isDir_ == true){
+                if(destNode->containsRequestedDir(src) != nullptr){
+                    return "destination already has file/directory of same name";
+                }
+                else{
+                    mode = 0;
+                }
+            }
+            else{
+                if(srcNode->isDir_ == true){
+                    //cannot rename as directory would be renaming to a file type
+                    return "source is a directory but destination is an existing file";
+                }
+                else{
+                    return "destination already has file of same name";
+                }
+                //return "";
+            }
+        }
+        else{
+            //check if user wants to mv to parent folder
+            if(dest == ".."){
+                if(curr_ != root_){
+                    mode = 0;
+                    destNode = curr_->parent_;
+                    if(destNode->containsRequestedDir(src) != nullptr){
+                        return "destination already has file/directory of same name";
+                    }
+                }
+                else{
+                    return "invalid path";
+                }
+            }
+            else{
+                //rename file
+                mode = 1;
+            }
+            
+            
+        }
+        //move or rename src to dest
+        if(mode == 0){
+            //move to dest
+            
+            //dereference from existing directory
+            if(curr_->leftmostChild_ == srcNode){
+                if(srcNode->rightSibling_ != nullptr){
+                    curr_->leftmostChild_ = srcNode->rightSibling_;
+                }
+                else{
+                    //shouldnt every encounter this issue as destnode must be a directory within curr_
+                    curr_->leftmostChild_ = nullptr;
+                }
+            }
+            else{
+                //set left sibling to point to srcNode's rightsib
+                if(srcNode->rightSibling_ != nullptr){
+                    srcNode->leftSibling()->rightSibling_ = srcNode->rightSibling_;
+                }
+                else{
+                    srcNode->leftSibling()->rightSibling_ = nullptr;
+                }
+            }
+            //check if destNode has any children
+            if(destNode->leftmostChild_ == nullptr){
+                destNode->leftmostChild_ = srcNode;
+                srcNode->rightSibling_ = nullptr;
+                srcNode->parent_ = destNode;
+            }
+            else{
+                // insert in order
+                srcNode->parent_ = destNode;
+                Node* tempNode = destNode->leftmostChild_;
+                while(tempNode->rightSibling_ != nullptr && srcNode->compareOrder(tempNode->name_,0) == true){
+                    tempNode = tempNode->rightSibling_;
+                }
+
+                //check which condition failed
+                if(tempNode->rightSibling_ == nullptr){
+                    if(srcNode->compareOrder(tempNode->name_,0) == false){
+                        if(tempNode == destNode->leftmostChild_){
+                            destNode->leftmostChild_ = srcNode;
+                        }
+                        else{
+                            tempNode->leftSibling()->rightSibling_ = srcNode;
+                        }
+                        srcNode->rightSibling_ = tempNode;
+                    }
+                    else{
+                        tempNode->rightSibling_ = srcNode;    
+                        srcNode->rightSibling_ = nullptr; 
+                    }
+                }
+                else{
+                    if(destNode->leftmostChild_ == tempNode){
+                        destNode->leftmostChild_ = srcNode;
+                    }
+                    else{
+                        tempNode->leftSibling()->rightSibling_ = srcNode;
+                    }
+                    srcNode->rightSibling_ = tempNode;
+                }
+            }
+            //return "";
+        }
+        else if(mode == 1){
+            //dereference from current dir
+            if(curr_->leftmostChild_ == srcNode){
+                if(srcNode->rightSibling_ != nullptr){
+                    curr_->leftmostChild_ = srcNode->rightSibling_;
+                }
+                else{
+                    //shouldnt every encounter this issue as destnode must be a directory within curr_
+                    curr_->leftmostChild_ = nullptr;
+                }
+            }
+            else{
+                //set left sibling to point to srcNode's rightsib
+                if(srcNode->rightSibling_ != nullptr){
+                    srcNode->leftSibling()->rightSibling_ = srcNode->rightSibling_;
+                }
+                else{
+                    srcNode->leftSibling()->rightSibling_ = nullptr;
+                }
+            }
+            //rename to dest
+            srcNode->name_ = dest;
+            //sort back into curr_
+            if(curr_->leftmostChild_ == nullptr){
+                curr_->leftmostChild_ = srcNode;
+                srcNode->rightSibling_ = nullptr;
+            }
+            else{
+                // insert in order
+                Node* tempNode = curr_->leftmostChild_;
+                while(tempNode->rightSibling_ != nullptr && srcNode->compareOrder(tempNode->name_,0) == true){
+                    tempNode = tempNode->rightSibling_;
+                }
+
+                //check which condition failed
+                if(tempNode->rightSibling_ == nullptr){
+                    
+                    if(srcNode->compareOrder(tempNode->name_,0) == false){
+                        
+                        if(tempNode == curr_->leftmostChild_){
+                            curr_->leftmostChild_ = srcNode;
+                        }
+                        else{
+                            tempNode->leftSibling()->rightSibling_ = srcNode;
+                        }
+                        srcNode->rightSibling_ = tempNode;
+                    }
+                    else{
+                        tempNode->rightSibling_ = srcNode;
+                        srcNode->rightSibling_ = nullptr; 
+                    }
+                    
+                }
+                else{
+                    if(tempNode == curr_->leftmostChild_){
+                        
+                        curr_->leftmostChild_ = srcNode;
+                    }
+                    else{
+                        
+                        tempNode->leftSibling()->rightSibling_ = srcNode;
+                    }
+                    
+                    srcNode->rightSibling_ = tempNode;
+                }
+                tempNode = nullptr;
+            }
+            destNode = nullptr;
+            srcNode = nullptr;
+            //return "";
+        }
+    }
+    return "";
+}
+
+/*
 string FileSystem::mv(const string& src, const string& dest) {
     if(src == dest){
         return "source and destination are the same";
@@ -567,9 +832,10 @@ string FileSystem::mv(const string& src, const string& dest) {
                 //now move to destination directory
                 srcNode->parent_ = destNode;
                 //slot in alphabetically
+                /*
                 if(destNode->leftmostChild_ != nullptr){
-                    Node* tmp = destNode->leftmostChild_;
-                    while(tmp->rightSibling_ != nullptr && srcNode->compareOrder(tmp->name_, 0) == false){
+                    
+                    while(tmp->rightSibling_ != nullptr && srcNode->compareOrder(tmp->name_, 0) == true){
                         tmp = tmp->rightSibling_;
                     }
                     if(tmp->rightSibling_ == nullptr){
@@ -577,13 +843,34 @@ string FileSystem::mv(const string& src, const string& dest) {
                         srcNode->rightSibling_ = nullptr;
                     }
                     else{
-                        srcNode->rightSibling_ = tmp->rightSibling_;
-                        tmp->rightSibling_ = srcNode;
+                        tmp->leftSibling()->rightSibling_ = srcNode;
+                        srcNode->rightSibling_ = tmp;
                     }
                     tmp = nullptr;
                     srcNode = nullptr;
                     destNode = nullptr;
                     return "";
+                }*/
+               /*
+                Node* tmp = destNode->leftmostChild_;
+                while (srcNode->compareOrder(tmp->name_, 0) == true && tmp->rightSibling_ != nullptr)
+                {
+                    tmp = tmp->rightSibling_;
+                }
+                if (srcNode->compareOrder(tmp->name_, 0) == false)
+                {
+                    //curr_->leftmostChild_ = newDir;
+                    if(tmp == curr_->leftmostChild_){
+                        curr_->leftmostChild_ = srcNode;
+                    }else{
+                        tmp->leftSibling()->rightSibling_ = srcNode;
+                    }
+                    
+                    srcNode->rightSibling_ = tmp;
+                }
+                else
+                {
+                    tmp->rightSibling_ = srcNode;
                 }
             }
             else if(dest == ".."){
@@ -643,8 +930,31 @@ string FileSystem::mv(const string& src, const string& dest) {
         //rename source to dest
         //std::cout<<"changing name of file/ directory";
         srcNode->name_ = dest;
+        
+        if(srcNode->parent_->leftmostChild_ != nullptr){
+            Node* tmp = srcNode->parent_->leftmostChild_;
+            while (srcNode->compareOrder(tmp->name_, 0) == true && tmp->rightSibling_ != nullptr)
+            {
+                tmp = tmp->rightSibling_;
+            }
+            if (srcNode->compareOrder(tmp->name_, 0) == false)
+            {
+                //curr_->leftmostChild_ = newDir;
+                if(tmp == curr_->leftmostChild_){
+                    curr_->leftmostChild_ = srcNode;
+                }else{
+                    tmp->leftSibling()->rightSibling_ = srcNode;
+                }
+                
+                srcNode->rightSibling_ = tmp;
+            }
+            else
+            {
+                tmp->rightSibling_ = srcNode;
+            }
+        }
         return "";
     }
     return "";
 
-}
+}*/
