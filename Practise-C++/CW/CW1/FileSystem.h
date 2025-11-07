@@ -26,10 +26,13 @@ public:
 	// are not there.
     Node(const string& name, bool isDir, Node* parent = nullptr, Node* leftmostChild = nullptr, Node* rightSibling = nullptr);
 
-    Node* containsRequestedDir(string reqDir);
+    //this will check if the this object has a node by the given name, as one of its children
+	Node* contains(string reqName);
 
+	//compares this object's name to a node with the same name as checkname, returns true if the current object is of a higher priority
     bool compareOrder(string checkName, int orderIndex);
 
+	//used by the destructor to delete the children of a directory
     void clearChildren(Node* currentNode);
 
 	// destructor
@@ -54,8 +57,6 @@ public:
 
 	// destructor
     ~FileSystem();
-
-    void traverseAndClear(Node currentRoot);
 
 	// change directory
 	string cd(const string& path);
@@ -84,8 +85,10 @@ public:
 	// move file/directory from src to dest
     string mv(const string& src, const string& dest);
 
+	//returns the string representation of the data tree
     string displayDirChildren(Node*, int) const;
 
+	//adds an offset to indent the tree children
     string addOffset(int) const;
 };
 
