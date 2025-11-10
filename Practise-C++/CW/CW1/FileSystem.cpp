@@ -195,6 +195,7 @@ FileSystem::~FileSystem() {
     curr_ = nullptr;
 }
 
+//This works for absolute paths
 string FileSystem::cd(const string& path){
     //checks that the path isnt empty
     if (path != ""){
