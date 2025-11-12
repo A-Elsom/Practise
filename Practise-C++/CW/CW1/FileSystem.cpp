@@ -1,5 +1,4 @@
 #include "FileSystem.h"
-#include <iostream>
 
 Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, Node* rightSibling)
 {
