@@ -52,7 +52,6 @@ DynArray::DynArray(const DynArray& copyArray)
     {
         array_[i] = copyArray.array_[i];
     }
-    
 }
 
 DynArray& DynArray::operator=(const DynArray& other)
