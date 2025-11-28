@@ -1,0 +1,23 @@
+# Makefile
+
+# the C++ compiler
+CXX     = g++
+#CC      = $(CXX)
+
+# options to pass to the compiler
+CXXFLAGS = -std=c++14	-O0 -g3
+
+All: all
+all: executable
+
+executable: Main.cpp Complex.o
+	$(CXX) $(CXXFLAGS) Main.cpp Complex.o -o executable
+
+Complex.o: Complex.cpp Complex.h
+	$(CXX) $(CXXFLAGS) -c Complex.cpp -o Complex.o
+
+deepclean:
+	rm -f *~ *.o Main *.exe *.stackdump
+
+clean:
+	rm -f *~ *.o *.stackdump

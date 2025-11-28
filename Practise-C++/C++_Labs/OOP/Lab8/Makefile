@@ -1,4 +1,2 @@
-executable : Main.cpp
-	g++ -c -g -fno-stack-protector Main.cpp -o Compiled
-
-Complex.O: Complex
+executable : ReadingFiles.cpp
+	g++ -c -g -fno-stack-protector ReadingFiles.cpp -o Compiled
