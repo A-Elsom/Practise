@@ -1,4 +1,5 @@
 #include <iostream>
+#include <exception>
 using std::cout;
 using std::endl;
 
@@ -13,41 +14,45 @@ public:
 	~Queue(){
 		delete [] data_;
 	}
+
 	void insert(const T& item){
-		int currentIndex = tail_;
-        if((tail_+ 1) == capacity_){
-			//move to front of array and loop til space found
-			currentIndex = 0;
-		}
-		bool hasPlaced = false;
-		while(currentIndex != data_[head_] && !hasPlaced){
-			if(data_[currentIndex] == nullptr){
-				data_[currentIndex] = item;
-				tail_ = currentIndex;
-				hasPlaced = true;
-			}
-			currentIndex++;
-		}
-		if(hasPlaced){
-			return;
-		}
-		
-    }
-	T remove(){
-		if(tail_ == head_){
-			cout<<"error- good luck guessing what it is";
-		}
-		T* tmp = data_[head_];
-		data_[head_] = nullptr;
-		if(head_ + 1 == Capacity_){
-			head_ = 0;
+		if ((tail_ + 1) % capacity_ == head_) {
+			throw std::overflow_error("b");
 		}
 		else{
-			head_ += 1;
+			data_[tail_] = item;
+			tail_ = (tail_ + 1) % capacity_;
 		}
-		return &tmp;
+		
 	}
-	void printAll(); // just for debugging
+		
+	void remove(){
+		
+		T x;
+		if (head_ == tail_) {
+			throw std::underflow_error("a");
+		}
+		else{
+			x = data_[head_];
+			head_ = (head_ + 1) % capacity_;
+		}
+		
+		//return x;
+	}
+	void printAll(){
+		
+		if (head_ <= tail_) {
+			for(int i = 0; i < head_; i++) cout << "X ";
+			for(int i = head_; i < tail_; i++) cout << data_[i] << " ";
+			for(int i = tail_; i < capacity_; i++) cout << "X ";
+		}
+		else {
+			for(int i = 0; i < tail_; i++) cout << data_[i] << " ";
+			for(int i = tail_; i < head_; i++) cout << "X ";
+			for(int i = head_; i < capacity_; i++) cout << data_[i] << " ";
+		}
+		cout << endl;
+	} // just for debugging
 private:
 	T* data_;
 	int head_; // index to first element
